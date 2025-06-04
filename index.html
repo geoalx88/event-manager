@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Manager App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossOrigin="anonymous" src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossOrigin="anonymous" src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossOrigin="anonymous" src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+        }
+        #root {
+            max-width: 600px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const EventManager = () => {
+            const [events, setEvents] = useState(() => {
+                const savedEvents = localStorage.getItem('events');
+                return savedEvents ? JSON.parse(savedEvents) : [];
+            });
+            const [eventTitle, setEventTitle] = useState('');
+            const [eventDate, setEventDate] = useState('');
+            const [eventDescription, setEventDescription] = useState('');
+
+            useEffect(() => {
+                localStorage.setItem('events', JSON.stringify(events));
+            }, [events]);
+
+            const addEvent = (e) => {
+                e.preventDefault();
+                if (eventTitle && eventDate && eventDescription) {
+                    setEvents([...events, { id: Date.now(), title: eventTitle, date: eventDate, description: eventDescription }]);
+                    setEventTitle('');
+                    setEventDate('');
+                    setEventDescription('');
+                }
+            };
+
+            const deleteEvent = (id) => {
+                setEvents(events.filter(event => event.id !== id));
+            };
+
+            return (
+                <div className="p-6 bg-white rounded-lg shadow-lg">
+                    <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Event Manager</h1>
+                    <form onSubmit={addEvent} className="mb-6">
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                value={eventTitle}
+                                onChange={(e) => setEventTitle(e.target.value)}
+                                placeholder="Event Title"
+                                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <input
+                                type="date"
+                                value={eventDate}
+                                onChange={(e) => setEventDate(e.target.value)}
+                                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <textarea
+                                value={eventDescription}
+                                onChange={(e) => setEventDescription(e.target.value)}
+                                placeholder="Event Description"
+                                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-300"
+                        >
+                            Add Event
+                        </button>
+                    </form>
+                    <ul className="space-y-4">
+                        {events.length === 0 ? (
+                            <p className="text-gray-500 text-center">No events yet!</p>
+                        ) : (
+                            events.map(event => (
+                                <li key={event.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg shadow">
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-700">{event.title}</h3>
+                                        <p className="text-sm text-gray-500">{event.date}</p>
+                                        <p className="text-sm text-gray-600">{event.description}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => deleteEvent(event.id)}
+                                        className="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 transition duration-300"
+                                    >
+                                        Delete
+                                    </button>
+                                </li>
+                            ))
+                        )}
+                    </ul>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<EventManager />, document.getElementById('root'));
+    </script>
+</body>
+</html>
